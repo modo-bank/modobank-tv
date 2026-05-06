@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>modobank • Analytics TV</title>
+
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+    }
+
+    iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <iframe id="dashboard"></iframe>
+
+  <script>
+
+    const paginas = [
+
+      'https://lookerstudio.google.com/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/YhMpF?rm=minimal'
+
+    ];
+
+    let paginaAtual = 0;
+
+    const iframe = document.getElementById('dashboard');
+
+    function trocarPagina() {
+
+      iframe.src = paginas[paginaAtual];
+
+      paginaAtual++;
+
+      if (paginaAtual >= paginas.length) {
+        paginaAtual = 0;
+      }
+
+    }
+
+    trocarPagina();
+
+    setInterval(trocarPagina, 30000);
+
+  </script>
+
+</body>
+
+</html>
