@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,7 +8,8 @@
   <title>modobank • Analytics TV</title>
 
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -24,22 +26,13 @@
       background: #a9c7e3;
     }
 
-    iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-      border: none;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.8s ease;
+    #slide {
+      width: 100vw;
+      height: 100vh;
+      object-fit: contain;
       background: #a9c7e3;
-    }
-
-    iframe.active {
       opacity: 1;
-      visibility: visible;
-      z-index: 2;
+      transition: opacity 0.8s ease;
     }
 
     #loading {
@@ -70,7 +63,9 @@
     }
 
     @keyframes spin {
-      to { transform: rotate(360deg); }
+      to {
+        transform: rotate(360deg);
+      }
     }
   </style>
 </head>
@@ -78,78 +73,80 @@
 <body>
 
   <div id="container">
+
     <div id="loading">
       <div class="spinner"></div>
       <div class="texto">Carregando indicadores...</div>
     </div>
+
+    <img id="slide" src="" alt="Dashboard modobank" />
+
   </div>
 
   <script>
-    const paginas = [
-      'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/YhMpF?rm=minimal',
-      'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_yds5rmxw1d?rm=minimal',
-      'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_tswfecck2d?rm=minimal',
-      'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_h4lqhtil2d?rm=minimal',
-      'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_ifsapre82d?rm=minimal',
-      'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_3a7cg1j82d?rm=minimal'
+    const imagens = [
+      'geral.png',
+      'comercial.png',
+      'crescimento.png',
+      'tarifas.png',
+      'ranking.png',
+      'evolucao.png'
     ];
 
-    const tempoNaTela = 30000; 
-    const tempoEsperaRenderizacao = 12000;
-    const recarregarTudoDepoisDe = 6 * 60 * 60 * 1000; // 6 horas
-
-    const container = document.getElementById('container');
-    const loading = document.getElementById('loading');
+    const tempoNaTela = 30000;
+    const recarregarTudoDepoisDe = 6 * 60 * 60 * 1000;
 
     let indiceAtual = 0;
-    let frameAtual = null;
-    let frameProximo = null;
-    let indiceProximo = 1;
 
-    function criarIframe(url) {
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.setAttribute('allowfullscreen', 'true');
-      container.appendChild(iframe);
-      return iframe;
-    }
+    const slide = document.getElementById('slide');
+    const loading = document.getElementById('loading');
 
-    function iniciar() {
-      loading.style.display = 'flex';
+    function carregarImagem() {
+      const novaImagem = new Image();
 
-      frameAtual = criarIframe(paginas[indiceAtual]);
-      frameProximo = criarIframe(paginas[indiceProximo]);
+      novaImagem.onload = () => {
+        slide.style.opacity = 0;
 
-      setTimeout(() => {
-        frameAtual.classList.add('active');
-        loading.style.display = 'none';
-      }, tempoEsperaRenderizacao);
+        setTimeout(() => {
+          slide.src = novaImagem.src;
+          slide.style.opacity = 1;
+          loading.style.display = 'none';
+        }, 300);
+      };
 
-      setTimeout(trocarTela, tempoEsperaRenderizacao + tempoNaTela);
+      novaImagem.src = imagens[indiceAtual] + '?v=' + Date.now();
     }
 
     function trocarTela() {
-      if (frameAtual) {
-        frameAtual.remove();
+      indiceAtual++;
+
+      if (indiceAtual >= imagens.length) {
+        indiceAtual = 0;
       }
 
-      frameAtual = frameProximo;
-      frameAtual.classList.add('active');
-
-      indiceAtual = indiceProximo;
-      indiceProximo = (indiceProximo + 1) % paginas.length;
-
-      frameProximo = criarIframe(paginas[indiceProximo]);
-
-      setTimeout(trocarTela, tempoNaTela);
+      carregarImagem();
     }
 
-    iniciar();
+    carregarImagem();
+
+    setInterval(trocarTela, tempoNaTela);
 
     setTimeout(() => {
       window.location.reload();
     }, recarregarTudoDepoisDe);
+
+    // anti suspensão LG WebOS
+    setInterval(() => {
+      document.body.style.opacity = "0.9999";
+
+      setTimeout(() => {
+        document.body.style.opacity = "1";
+      }, 50);
+
+      window.dispatchEvent(new Event('mousemove'));
+    }, 20000);
   </script>
 
 </body>
+
 </html>
