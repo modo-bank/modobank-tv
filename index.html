@@ -13,32 +13,76 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background: #000;
+      background: #a9c7e3;
+      font-family: Arial, sans-serif;
+    }
+
+    #container {
+      width: 100%;
+      height: 100%;
+      position: relative;
+      background: #a9c7e3;
     }
 
     iframe {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
       border: none;
-      background: #000;
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.8s ease;
+      background: #a9c7e3;
     }
 
-    #status {
-      position: fixed;
-      bottom: 12px;
-      right: 18px;
-      color: rgba(255,255,255,0.55);
-      font-family: Arial, sans-serif;
-      font-size: 18px;
-      z-index: 99;
+    iframe.active {
+      opacity: 1;
+      visibility: visible;
+      z-index: 2;
+    }
+
+    #loading {
+      position: absolute;
+      inset: 0;
+      background: #a9c7e3;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 999;
+      color: #1d246b;
+    }
+
+    .spinner {
+      width: 70px;
+      height: 70px;
+      border: 8px solid rgba(29, 36, 107, 0.15);
+      border-top: 8px solid #4f46e5;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-bottom: 30px;
+    }
+
+    .texto {
+      font-size: 34px;
+      font-weight: bold;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
 
-  <iframe id="dashboard"></iframe>
-  <div id="status"></div>
+  <div id="container">
+    <div id="loading">
+      <div class="spinner"></div>
+      <div class="texto">Carregando indicadores...</div>
+    </div>
+  </div>
 
   <script>
     const paginas = [
@@ -50,42 +94,61 @@
       'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_3a7cg1j82d?rm=minimal'
     ];
 
-    const tempoPorTela = 45000; // 45 segundos
-    const ciclosAntesDeRecarregar = 3; // 3 voltas completas
+    const tempoNaTela = 30000; 
+    const tempoEsperaRenderizacao = 12000;
+    const recarregarTudoDepoisDe = 6 * 60 * 60 * 1000; // 6 horas
 
-    let paginaAtual = 0;
-    let ciclosCompletos = 0;
+    const container = document.getElementById('container');
+    const loading = document.getElementById('loading');
 
-    const iframe = document.getElementById('dashboard');
-    const status = document.getElementById('status');
+    let indiceAtual = 0;
+    let frameAtual = null;
+    let frameProximo = null;
+    let indiceProximo = 1;
 
-    function carregarPagina() {
-      iframe.src = paginas[paginaAtual];
-
-      status.innerText = `Tela ${paginaAtual + 1} de ${paginas.length}`;
-
-      paginaAtual++;
-
-      if (paginaAtual >= paginas.length) {
-        paginaAtual = 0;
-        ciclosCompletos++;
-      }
-
-      if (ciclosCompletos >= ciclosAntesDeRecarregar) {
-        setTimeout(() => {
-          window.location.reload();
-        }, tempoPorTela);
-        return;
-      }
-
-      setTimeout(carregarPagina, tempoPorTela);
+    function criarIframe(url) {
+      const iframe = document.createElement('iframe');
+      iframe.src = url;
+      iframe.setAttribute('allowfullscreen', 'true');
+      container.appendChild(iframe);
+      return iframe;
     }
 
-    window.onload = () => {
-      paginaAtual = 0;
-      ciclosCompletos = 0;
-      carregarPagina();
-    };
+    function iniciar() {
+      loading.style.display = 'flex';
+
+      frameAtual = criarIframe(paginas[indiceAtual]);
+      frameProximo = criarIframe(paginas[indiceProximo]);
+
+      setTimeout(() => {
+        frameAtual.classList.add('active');
+        loading.style.display = 'none';
+      }, tempoEsperaRenderizacao);
+
+      setTimeout(trocarTela, tempoEsperaRenderizacao + tempoNaTela);
+    }
+
+    function trocarTela() {
+      if (frameAtual) {
+        frameAtual.remove();
+      }
+
+      frameAtual = frameProximo;
+      frameAtual.classList.add('active');
+
+      indiceAtual = indiceProximo;
+      indiceProximo = (indiceProximo + 1) % paginas.length;
+
+      frameProximo = criarIframe(paginas[indiceProximo]);
+
+      setTimeout(trocarTela, tempoNaTela);
+    }
+
+    iniciar();
+
+    setTimeout(() => {
+      window.location.reload();
+    }, recarregarTudoDepoisDe);
   </script>
 
 </body>
