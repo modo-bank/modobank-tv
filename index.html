@@ -62,6 +62,13 @@
       font-weight: bold;
     }
 
+    #percentual {
+      margin-top: 18px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #4f46e5;
+    }
+
     @keyframes spin {
       to {
         transform: rotate(360deg);
@@ -77,6 +84,7 @@
     <div id="loading">
       <div class="spinner"></div>
       <div class="texto">Carregando indicadores...</div>
+      <div id="percentual">0%</div>
     </div>
 
     <img id="slide" src="" alt="Dashboard modobank" />
@@ -100,30 +108,56 @@
 
     const slide = document.getElementById('slide');
     const loading = document.getElementById('loading');
+    const percentual = document.getElementById('percentual');
 
     function carregarImagem() {
+      loading.style.display = 'flex';
+
+      let progresso = 0;
+      percentual.innerText = '0%';
+
+      const animacao = setInterval(() => {
+        progresso += Math.floor(Math.random() * 12) + 3;
+
+        if (progresso > 90) {
+          progresso = 90;
+        }
+
+        percentual.innerText = progresso + '%';
+      }, 400);
+
       const novaImagem = new Image();
 
       novaImagem.onload = () => {
+        clearInterval(animacao);
+
+        percentual.innerText = '100%';
+
         slide.style.opacity = 0;
 
         setTimeout(() => {
           slide.src = novaImagem.src;
           slide.style.opacity = 1;
           loading.style.display = 'none';
-        }, 300);
+        }, 500);
+      };
+
+      novaImagem.onerror = () => {
+        clearInterval(animacao);
+
+        percentual.innerText = 'Erro ao carregar';
+
+        setTimeout(() => {
+          indiceAtual = (indiceAtual + 1) % imagens.length;
+          carregarImagem();
+        }, 3000);
       };
 
       novaImagem.src = imagens[indiceAtual] + '?v=' + Date.now();
     }
 
     function trocarTela() {
-      indiceAtual++;
-
-      if (indiceAtual >= imagens.length) {
-        indiceAtual = 0;
-      }
-
+      indiceAtual = (indiceAtual + 1) % imagens.length;
       carregarImagem();
     }
 
@@ -135,7 +169,7 @@
       window.location.reload();
     }, recarregarTudoDepoisDe);
 
-    // anti suspensão LG WebOS
+    // Anti suspensão LG WebOS
     setInterval(() => {
       document.body.style.opacity = "0.9999";
 
