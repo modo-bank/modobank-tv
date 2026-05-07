@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>modobank • Analytics TV</title>
 
   <style>
@@ -15,42 +16,29 @@
       background: #000;
     }
 
-    .frame {
-      position: absolute;
-      inset: 0;
+    iframe {
       width: 100%;
       height: 100%;
       border: none;
-      opacity: 0;
-      visibility: hidden;
-      transition: opacity 0.8s ease;
       background: #000;
     }
 
-    .frame.active {
-      opacity: 1;
-      visibility: visible;
-      z-index: 2;
-    }
-
-    #loading {
+    #status {
       position: fixed;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: #000;
-      color: white;
+      bottom: 12px;
+      right: 18px;
+      color: rgba(255,255,255,0.55);
       font-family: Arial, sans-serif;
-      font-size: 34px;
-      z-index: 10;
+      font-size: 18px;
+      z-index: 99;
     }
   </style>
 </head>
 
 <body>
 
-  <div id="loading">Carregando painel de indicadores...</div>
+  <iframe id="dashboard"></iframe>
+  <div id="status"></div>
 
   <script>
     const paginas = [
@@ -62,39 +50,42 @@
       'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_3a7cg1j82d?rm=minimal'
     ];
 
-    const tempoPorTela = 30000; // 30 seg
-    const tempoInicialDeCarga = 45000; // TV carregar tudo
+    const tempoPorTela = 45000; // 45 segundos
+    const ciclosAntesDeRecarregar = 3; // 3 voltas completas
 
     let paginaAtual = 0;
-    const frames = [];
+    let ciclosCompletos = 0;
 
-    paginas.forEach((url, index) => {
-      const iframe = document.createElement('iframe');
-      iframe.src = url;
-      iframe.className = 'frame';
-      iframe.setAttribute('allowfullscreen', 'true');
-      iframe.setAttribute('loading', 'eager');
-      document.body.appendChild(iframe);
-      frames.push(iframe);
-    });
+    const iframe = document.getElementById('dashboard');
+    const status = document.getElementById('status');
 
-    function mostrarPagina(index) {
-      frames.forEach((frame, i) => {
-        frame.classList.toggle('active', i === index);
-      });
+    function carregarPagina() {
+      iframe.src = paginas[paginaAtual];
+
+      status.innerText = `Tela ${paginaAtual + 1} de ${paginas.length}`;
+
+      paginaAtual++;
+
+      if (paginaAtual >= paginas.length) {
+        paginaAtual = 0;
+        ciclosCompletos++;
+      }
+
+      if (ciclosCompletos >= ciclosAntesDeRecarregar) {
+        setTimeout(() => {
+          window.location.reload();
+        }, tempoPorTela);
+        return;
+      }
+
+      setTimeout(carregarPagina, tempoPorTela);
     }
 
-    setTimeout(() => {
-      document.getElementById('loading').style.display = 'none';
-
-      mostrarPagina(paginaAtual);
-
-      setInterval(() => {
-        paginaAtual = (paginaAtual + 1) % frames.length;
-        mostrarPagina(paginaAtual);
-      }, tempoPorTela);
-
-    }, tempoInicialDeCarga);
+    window.onload = () => {
+      paginaAtual = 0;
+      ciclosCompletos = 0;
+      carregarPagina();
+    };
   </script>
 
 </body>
