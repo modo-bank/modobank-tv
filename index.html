@@ -1,15 +1,12 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
   <title>modobank • Analytics TV</title>
 
   <style>
-    html,
-    body {
+    html, body {
       margin: 0;
       padding: 0;
       width: 100%;
@@ -32,7 +29,7 @@
       object-fit: contain;
       background: #a9c7e3;
       opacity: 1;
-      transition: opacity 0.8s ease;
+      transition: opacity 0.6s ease;
     }
 
     #loading {
@@ -54,7 +51,7 @@
       border-top: 8px solid #4f46e5;
       border-radius: 50%;
       animation: spin 1s linear infinite;
-      margin-bottom: 30px;
+      margin-bottom: 28px;
     }
 
     .texto {
@@ -63,24 +60,20 @@
     }
 
     #percentual {
-      margin-top: 18px;
-      font-size: 28px;
+      margin-top: 16px;
+      font-size: 30px;
       font-weight: bold;
       color: #4f46e5;
     }
 
     @keyframes spin {
-      to {
-        transform: rotate(360deg);
-      }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
-
   <div id="container">
-
     <div id="loading">
       <div class="spinner"></div>
       <div class="texto">Carregando indicadores...</div>
@@ -88,7 +81,6 @@
     </div>
 
     <img id="slide" src="" alt="Dashboard modobank" />
-
   </div>
 
   <script>
@@ -105,65 +97,64 @@
     const recarregarTudoDepoisDe = 6 * 60 * 60 * 1000;
 
     let indiceAtual = 0;
+    const imagensCarregadas = [];
 
     const slide = document.getElementById('slide');
     const loading = document.getElementById('loading');
     const percentual = document.getElementById('percentual');
 
-    function carregarImagem() {
-      loading.style.display = 'flex';
+    function iniciarCarregamento() {
+      let carregadas = 0;
 
-      let progresso = 0;
-      percentual.innerText = '0%';
+      imagens.forEach((src, index) => {
+        const img = new Image();
 
-      const animacao = setInterval(() => {
-        progresso += Math.floor(Math.random() * 12) + 3;
+        img.onload = () => {
+          carregadas++;
+          imagensCarregadas[index] = src;
 
-        if (progresso > 90) {
-          progresso = 90;
-        }
+          const pct = Math.round((carregadas / imagens.length) * 100);
+          percentual.innerText = pct + '%';
 
-        percentual.innerText = progresso + '%';
-      }, 400);
+          if (carregadas === imagens.length) {
+            iniciarSlideshow();
+          }
+        };
 
-      const novaImagem = new Image();
+        img.onerror = () => {
+          carregadas++;
+          imagensCarregadas[index] = src;
 
-      novaImagem.onload = () => {
-        clearInterval(animacao);
+          const pct = Math.round((carregadas / imagens.length) * 100);
+          percentual.innerText = pct + '%';
 
-        percentual.innerText = '100%';
+          if (carregadas === imagens.length) {
+            iniciarSlideshow();
+          }
+        };
+
+        img.src = src;
+      });
+    }
+
+    function iniciarSlideshow() {
+      slide.src = imagensCarregadas[0];
+      loading.style.display = 'none';
+
+      setInterval(() => {
+        indiceAtual = (indiceAtual + 1) % imagensCarregadas.length;
 
         slide.style.opacity = 0;
 
         setTimeout(() => {
-          slide.src = novaImagem.src;
+          slide.src = imagensCarregadas[indiceAtual];
           slide.style.opacity = 1;
-          loading.style.display = 'none';
-        }, 500);
-      };
+        }, 400);
 
-      novaImagem.onerror = () => {
-        clearInterval(animacao);
-
-        percentual.innerText = 'Erro ao carregar';
-
-        setTimeout(() => {
-          indiceAtual = (indiceAtual + 1) % imagens.length;
-          carregarImagem();
-        }, 3000);
-      };
-
-      novaImagem.src = imagens[indiceAtual] + '?v=' + Date.now();
+      }, tempoNaTela);
     }
 
-    function trocarTela() {
-      indiceAtual = (indiceAtual + 1) % imagens.length;
-      carregarImagem();
-    }
-
-    carregarImagem();
-
-    setInterval(trocarTela, tempoNaTela);
+    iniciarCarregamento();
 
     setTimeout(() => {
       window.location.reload();
@@ -180,7 +171,5 @@
       window.dispatchEvent(new Event('mousemove'));
     }, 20000);
   </script>
-
 </body>
-
 </html>
