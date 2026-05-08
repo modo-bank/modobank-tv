@@ -1,0 +1,12 @@
+{
+  "name": "modobank-tv",
+  "version": "1.0.0",
+  "description": "Analytics TV modobank",
+  "main": "screenshots.js",
+  "scripts": {
+    "start": "node screenshots.js"
+  },
+  "dependencies": {
+    "playwright": "^1.52.0"
+  }
+}
