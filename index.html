@@ -28,9 +28,11 @@
 </head>
 
 <body>
+
   <img id="slide" src="geral.png" alt="Dashboard modobank" />
 
   <script>
+
     const imagens = [
       'geral.png',
       'comercial.png',
@@ -43,19 +45,43 @@
     const tempoNaTela = 30000;
 
     let indiceAtual = 0;
+
     const slide = document.getElementById('slide');
 
+    // troca automática das telas
     setInterval(() => {
+
       indiceAtual = (indiceAtual + 1) % imagens.length;
 
       slide.style.opacity = 0;
 
       setTimeout(() => {
+
         slide.src = imagens[indiceAtual] + '?cache=' + new Date().getTime();
+
         slide.style.opacity = 1;
+
       }, 500);
 
     }, tempoNaTela);
+
+    // anti suspensão WebOS LG
+    setInterval(() => {
+
+      // micro alteração invisível
+      document.body.style.opacity = "0.9999";
+
+      setTimeout(() => {
+        document.body.style.opacity = "1";
+      }, 100);
+
+      // eventos falsos
+      window.dispatchEvent(new Event('mousemove'));
+      window.dispatchEvent(new Event('click'));
+
+    }, 900000); // 15 minutos
+
   </script>
+
 </body>
 </html>
