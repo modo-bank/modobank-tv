@@ -3,6 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>modobank • Analytics TV</title>
 
   <style>
@@ -16,72 +17,18 @@
       font-family: Arial, sans-serif;
     }
 
-    #container {
-      width: 100%;
-      height: 100%;
-      position: relative;
-      background: #a9c7e3;
-    }
-
     #slide {
       width: 100vw;
       height: 100vh;
       object-fit: contain;
       background: #a9c7e3;
-      opacity: 1;
       transition: opacity 0.6s ease;
-    }
-
-    #loading {
-      position: absolute;
-      inset: 0;
-      background: #a9c7e3;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      z-index: 999;
-      color: #1d246b;
-    }
-
-    .spinner {
-      width: 70px;
-      height: 70px;
-      border: 8px solid rgba(29, 36, 107, 0.15);
-      border-top: 8px solid #4f46e5;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin-bottom: 28px;
-    }
-
-    .texto {
-      font-size: 34px;
-      font-weight: bold;
-    }
-
-    #percentual {
-      margin-top: 16px;
-      font-size: 30px;
-      font-weight: bold;
-      color: #4f46e5;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 
 <body>
-  <div id="container">
-    <div id="loading">
-      <div class="spinner"></div>
-      <div class="texto">Carregando indicadores...</div>
-      <div id="percentual">0%</div>
-    </div>
-
-    <img id="slide" src="" alt="Dashboard modobank" />
-  </div>
+  <img id="slide" src="geral.png" alt="Dashboard modobank" />
 
   <script>
     const imagens = [
@@ -94,82 +41,21 @@
     ];
 
     const tempoNaTela = 30000;
-    const recarregarTudoDepoisDe = 6 * 60 * 60 * 1000;
 
     let indiceAtual = 0;
-    const imagensCarregadas = [];
-
     const slide = document.getElementById('slide');
-    const loading = document.getElementById('loading');
-    const percentual = document.getElementById('percentual');
 
-    function iniciarCarregamento() {
-      let carregadas = 0;
-
-      imagens.forEach((src, index) => {
-        const img = new Image();
-
-        img.onload = () => {
-          carregadas++;
-          imagensCarregadas[index] = src;
-
-          const pct = Math.round((carregadas / imagens.length) * 100);
-          percentual.innerText = pct + '%';
-
-          if (carregadas === imagens.length) {
-            iniciarSlideshow();
-          }
-        };
-
-        img.onerror = () => {
-          carregadas++;
-          imagensCarregadas[index] = src;
-
-          const pct = Math.round((carregadas / imagens.length) * 100);
-          percentual.innerText = pct + '%';
-
-          if (carregadas === imagens.length) {
-            iniciarSlideshow();
-          }
-        };
-
-        img.src = src;
-      });
-    }
-
-    function iniciarSlideshow() {
-      slide.src = imagensCarregadas[0];
-      loading.style.display = 'none';
-
-      setInterval(() => {
-        indiceAtual = (indiceAtual + 1) % imagensCarregadas.length;
-
-        slide.style.opacity = 0;
-
-        setTimeout(() => {
-          slide.src = imagensCarregadas[indiceAtual];
-          slide.style.opacity = 1;
-        }, 400);
-
-      }, tempoNaTela);
-    }
-
-    iniciarCarregamento();
-
-    setTimeout(() => {
-      window.location.reload();
-    }, recarregarTudoDepoisDe);
-
-    // Anti suspensão LG WebOS
     setInterval(() => {
-      document.body.style.opacity = "0.9999";
+      indiceAtual = (indiceAtual + 1) % imagens.length;
+
+      slide.style.opacity = 0;
 
       setTimeout(() => {
-        document.body.style.opacity = "1";
-      }, 50);
+        slide.src = imagens[indiceAtual] + '?cache=' + new Date().getTime();
+        slide.style.opacity = 1;
+      }, 500);
 
-      window.dispatchEvent(new Event('mousemove'));
-    }, 20000);
+    }, tempoNaTela);
   </script>
 </body>
 </html>
