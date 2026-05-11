@@ -1,5 +1,4 @@
 const { chromium } = require('playwright');
-const sharp = require('sharp');
 
 const dashboards = [
   {
@@ -27,25 +26,6 @@ const dashboards = [
     url: 'https://datastudio.google.com/embed/reporting/3ade70de-4dda-4e6d-9f8c-89e3376ab4f6/page/p_3a7cg1j82d?rm=minimal&hl=pt-BR'
   }
 ];
-
-async function tratarImagem(arquivo) {
-  const temp = `temp-${arquivo}`;
-
-  await sharp(arquivo)
-    .extract({
-      left: 70,
-      top: 0,
-      width: 1780,
-      height: 1048
-    })
-    .resize(1920, 1080, {
-      fit: 'fill'
-    })
-    .png()
-    .toFile(temp);
-
-  await sharp(temp).toFile(arquivo);
-}
 
 async function tirarPrints() {
   const browser = await chromium.launch({
@@ -77,6 +57,20 @@ async function tirarPrints() {
       timeout: 120000
     });
 
+    // Remove margens do navegador e tenta encaixar melhor o relatório na viewport
+    await page.evaluate(() => {
+      document.body.style.margin = '0';
+      document.body.style.padding = '0';
+      document.body.style.overflow = 'hidden';
+
+      document.documentElement.style.margin = '0';
+      document.documentElement.style.padding = '0';
+      document.documentElement.style.overflow = 'hidden';
+
+      document.documentElement.style.zoom = '1.08';
+    });
+
+    // Tempo extra para o Looker renderizar gráficos/tabelas
     await page.waitForTimeout(25000);
 
     await page.screenshot({
@@ -84,9 +78,7 @@ async function tirarPrints() {
       fullPage: false
     });
 
-    await tratarImagem(dashboard.nome);
-
-    console.log(`Print salvo e ajustado: ${dashboard.nome}`);
+    console.log(`Print salvo: ${dashboard.nome}`);
   }
 
   await browser.close();
