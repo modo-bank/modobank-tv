@@ -20,9 +20,10 @@
     #slide {
       width: 100vw;
       height: 100vh;
-      object-fit: contain;
+      object-fit: fill;
       background: #a9c7e3;
-      transition: opacity 0.6s ease;
+      transition: opacity 0.6s ease, transform 0.2s ease;
+      display: block;
     }
   </style>
 </head>
@@ -32,7 +33,6 @@
   <img id="slide" src="geral.png" alt="Dashboard modobank" />
 
   <script>
-
     const imagens = [
       'geral.png',
       'comercial.png',
@@ -43,48 +43,42 @@
     ];
 
     const tempoNaTela = 30000;
+    const tempoAntiSuspensao = 600000; // 10 minutos
 
     let indiceAtual = 0;
-
     const slide = document.getElementById('slide');
 
     // troca automática das telas
     setInterval(() => {
-
       indiceAtual = (indiceAtual + 1) % imagens.length;
 
       slide.style.opacity = 0;
 
       setTimeout(() => {
-
         slide.src = imagens[indiceAtual] + '?cache=' + new Date().getTime();
-
         slide.style.opacity = 1;
-
       }, 500);
 
     }, tempoNaTela);
 
-   // anti suspensão WebOS LG
-setInterval(() => {
+    // anti suspensão WebOS LG
+    setInterval(() => {
+      document.body.style.opacity = "0.9999";
 
-  document.body.style.opacity = "0.9999";
+      setTimeout(() => {
+        document.body.style.opacity = "1";
+      }, 100);
 
-  setTimeout(() => {
-    document.body.style.opacity = "1";
-  }, 100);
+      window.dispatchEvent(new Event('mousemove'));
+      window.dispatchEvent(new Event('click'));
 
-  window.dispatchEvent(new Event('mousemove'));
-  window.dispatchEvent(new Event('click'));
+      // micro movimento invisível
+      slide.style.transform =
+        slide.style.transform === 'scale(1)'
+          ? 'scale(1.0001)'
+          : 'scale(1)';
 
-  // micro movimento invisível
-  slide.style.transform =
-    slide.style.transform === 'scale(1)'
-      ? 'scale(1.0001)'
-      : 'scale(1)';
-
-}, 600000);
-
+    }, tempoAntiSuspensao);
   </script>
 
 </body>
